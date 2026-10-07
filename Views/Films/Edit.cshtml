@@ -1,0 +1,19 @@
+@model FilmFormViewModel
+@{
+    ViewData["Title"] = "Modifier " + Model.Title;
+}
+
+<div class="page-head">
+    <span class="sticker sticker-violet">Édition</span>
+    <h1>Modifier « @Model.Title »</h1>
+</div>
+
+<form asp-action="Edit" asp-route-id="@Model.Id" method="post" enctype="multipart/form-data" class="form-card">
+    <partial name="_FilmFields" model="Model" />
+    <div class="mt-4 d-flex gap-2">
+        <button type="submit" class="btn btn-yellow"><i class="bi bi-check-lg me-1"></i>Enregistrer</button>
+        <a asp-action="Index" class="btn btn-white">Annuler</a>
+    </div>
+</form>
+
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

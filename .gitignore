@@ -1,0 +1,8 @@
+bin/
+obj/
+*.db
+wwwroot/uploads/*
+!wwwroot/uploads/.gitkeep
+.vs/
+*.user
+*.suo

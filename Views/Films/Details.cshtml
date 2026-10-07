@@ -1,0 +1,41 @@
+@model Film
+@{
+    ViewData["Title"] = Model.Title;
+    var color = (Model.Genre ?? "").Sum(ch => ch) % 5;
+}
+
+<a asp-action="Index" class="btn btn-white btn-sm mb-4"><i class="bi bi-arrow-left me-1"></i>Retour au catalogue</a>
+
+<div class="row g-4 g-lg-5 align-items-start">
+    <div class="col-8 col-sm-6 col-md-4 col-lg-3">
+        <div class="poster-big">
+            <partial name="_Poster" model="Model" />
+        </div>
+    </div>
+    <div class="col-md-8 col-lg-9">
+        <div class="form-card">
+            <h1 class="display-6 mb-2">@Model.Title</h1>
+            <div class="d-flex flex-wrap gap-2 mb-3">
+                <span class="chip c-@color">@(string.IsNullOrEmpty(Model.Genre) ? "Film" : Model.Genre)</span>
+                <span class="chip c-3"><i class="bi bi-calendar3 me-1"></i>@Model.ReleaseYear</span>
+                <span class="chip c-4"><i class="bi bi-clock me-1"></i>@(Model.DurationMinutes / 60)h@((Model.DurationMinutes % 60).ToString("00"))</span>
+            </div>
+
+            @if (!string.IsNullOrEmpty(Model.Director))
+            {
+                <p class="mb-3"><i class="bi bi-camera-reels-fill me-2 text-violet"></i><strong>Réalisateur :</strong> @Model.Director</p>
+            }
+            <h2 class="h5">Synopsis</h2>
+            <p class="mb-0">@(string.IsNullOrWhiteSpace(Model.Description) ? "Pas de description pour ce film." : Model.Description)</p>
+
+            @if (User.IsInRole("Admin"))
+            {
+                <hr class="ink-rule" />
+                <div class="d-flex gap-2">
+                    <a class="btn btn-yellow" asp-action="Edit" asp-route-id="@Model.Id"><i class="bi bi-pencil-fill me-1"></i>Modifier</a>
+                    <a class="btn btn-coral" asp-action="Delete" asp-route-id="@Model.Id"><i class="bi bi-trash-fill me-1"></i>Supprimer</a>
+                </div>
+            }
+        </div>
+    </div>
+</div>

@@ -1,0 +1,49 @@
+@page
+@model RegisterModel
+@{
+    ViewData["Title"] = "Inscription";
+}
+
+<div class="auth-wrap">
+    <section class="auth-art d-none d-lg-flex">
+        <partial name="_AuthArt" />
+        <h2>Rejoins la séance !</h2>
+        <p>Crée ton compte en quelques secondes.</p>
+    </section>
+
+    <section class="auth-card">
+        <span class="sticker sticker-coral">Nouveau ✨</span>
+        <h1>Inscription</h1>
+        <p class="text-muted-ink">Un email, un mot de passe, et c'est parti.</p>
+
+        <form id="registerForm" method="post" asp-route-returnUrl="@Model.ReturnUrl">
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+            <div class="mb-3">
+                <label asp-for="Input.Email" class="form-label">Email</label>
+                <input asp-for="Input.Email" class="form-control" autocomplete="username" placeholder="toi@exemple.com" />
+                <span asp-validation-for="Input.Email" class="text-danger small"></span>
+            </div>
+            <div class="mb-3">
+                <label asp-for="Input.Password" class="form-label">Mot de passe</label>
+                <input asp-for="Input.Password" class="form-control" autocomplete="new-password" />
+                <span asp-validation-for="Input.Password" class="text-danger small"></span>
+                <div class="form-text">6 caractères minimum, avec majuscule, minuscule, chiffre et caractère spécial.</div>
+            </div>
+            <div class="mb-4">
+                <label asp-for="Input.ConfirmPassword" class="form-label">Confirmer le mot de passe</label>
+                <input asp-for="Input.ConfirmPassword" class="form-control" autocomplete="new-password" />
+                <span asp-validation-for="Input.ConfirmPassword" class="text-danger small"></span>
+            </div>
+
+            <button type="submit" class="btn btn-violet w-100 btn-lg">Créer mon compte</button>
+        </form>
+
+        <p class="text-center mt-4 mb-0">
+            Déjà inscrit ?
+            <a asp-page="./Login" asp-route-returnUrl="@Model.ReturnUrl" class="link-pop">Connecte-toi</a>
+        </p>
+    </section>
+</div>
+
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

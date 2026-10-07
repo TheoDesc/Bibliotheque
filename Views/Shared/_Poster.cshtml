@@ -1,0 +1,14 @@
+@model Film
+<div class="poster">
+    @if (!string.IsNullOrEmpty(Model.PosterPath))
+    {
+        <img src="@Model.PosterPath" alt="Affiche de @Model.Title" loading="lazy" />
+    }
+    else
+    {
+        <div class="poster-placeholder">
+            <i class="bi bi-film"></i>
+            <span>@Model.Title</span>
+        </div>
+    }
+</div>
