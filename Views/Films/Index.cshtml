@@ -1,61 +1,137 @@
 @model IReadOnlyList<Film>
+
 @{
     ViewData["Title"] = "Catalogue";
     var isAdmin = User.IsInRole("Admin");
     var firstName = (User.Identity?.Name ?? "").Split('@')[0];
 }
 
-<section class="hero">
-    <div class="hero-text">
-        <span class="sticker sticker-yellow">🎬 Ma bibliothèque</span>
-        <h1>Salut @firstName !</h1>
-        <p>Parcours le catalogue et trouve ton prochain film.</p>
+<section class="catalog-header">
+    <div>
+        <div class="catalog-eyebrow">
+            <i class="bi bi-collection-play"></i>
+            CATALOGUE
+        </div>
+
+        <h1>Bonjour @firstName</h1>
+
+        <p>
+            Explorez notre sélection de films et trouvez votre prochain visionnage.
+        </p>
     </div>
-    <div class="hero-side">
-        <div class="stat-bubble"><strong>@Model.Count</strong><span>film@(Model.Count > 1 ? "s" : "")</span></div>
+
+    <div class="catalog-header-actions">
+        <div class="catalog-count">
+            <strong>@Model.Count</strong>
+            <span>film@(Model.Count > 1 ? "s" : "")</span>
+        </div>
+
         @if (isAdmin)
         {
-            <a class="btn btn-yellow btn-lg" asp-action="Create"><i class="bi bi-plus-lg me-1"></i>Ajouter un film</a>
+            <a class="btn btn-primary-custom"
+               asp-action="Create">
+                <i class="bi bi-plus-lg"></i>
+                Ajouter un film
+            </a>
         }
     </div>
 </section>
 
 @if (Model.Count == 0)
 {
-    <div class="form-card text-center">
-        <div class="big-emoji">🍿</div>
-        <p class="mb-0">Aucun film pour le moment.</p>
+    <div class="empty-state">
+        <i class="bi bi-film"></i>
+        <h2>Aucun film disponible</h2>
+        <p>Le catalogue ne contient encore aucun film.</p>
+
+        @if (isAdmin)
+        {
+            <a asp-action="Create" class="btn btn-primary-custom">
+                Ajouter le premier film
+            </a>
+        }
     </div>
 }
 else
 {
-    <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-5 g-4 mt-1">
+    <div class="film-grid">
+
         @foreach (var film in Model)
         {
-            var color = (film.Genre ?? "").Sum(ch => ch) % 5;
-            <div class="col">
-                <article class="film-card h-100">
-                    <a asp-action="Details" asp-route-id="@film.Id" class="poster-wrap">
-                        <partial name="_Poster" model="film" />
-                        <span class="year-sticker">@film.ReleaseYear</span>
-                    </a>
-                    <div class="film-body">
-                        <h2 class="film-title" title="@film.Title">@film.Title</h2>
-                        @if (!string.IsNullOrEmpty(film.Genre))
-                        {
-                            <span class="chip c-@color">@film.Genre</span>
-                        }
-                        <div class="film-actions">
-                            <a class="btn btn-violet btn-sm flex-grow-1" asp-action="Details" asp-route-id="@film.Id">Détails</a>
-                            @if (isAdmin)
-                            {
-                                <a class="btn btn-white btn-sm" asp-action="Edit" asp-route-id="@film.Id" title="Modifier"><i class="bi bi-pencil-fill"></i></a>
-                                <a class="btn btn-coral btn-sm" asp-action="Delete" asp-route-id="@film.Id" title="Supprimer"><i class="bi bi-trash-fill"></i></a>
-                            }
-                        </div>
+            <article class="film-card">
+
+                <a asp-action="Details"
+                   asp-route-id="@film.Id"
+                   class="film-poster">
+
+                    <partial name="_Poster" model="film" />
+
+                    <span class="film-year">
+                        @film.ReleaseYear
+                    </span>
+                </a>
+
+                <div class="film-body">
+
+                    <h2 class="film-title" title="@film.Title">
+                        @film.Title
+                    </h2>
+
+                    @if (!string.IsNullOrWhiteSpace(film.Genre))
+                    {
+                        <span class="film-genre">
+                            @film.Genre
+                        </span>
+                    }
+
+                    <div class="film-meta">
+                        <span>
+                            <i class="bi bi-clock"></i>
+                            @film.DurationMinutes min
+                        </span>
+
+                        <span class="film-price">
+                            @film.Prix.ToString("0.00") €
+                        </span>
                     </div>
-                </article>
-            </div>
+
+                    <div class="film-actions">
+
+                        <a class="btn btn-details"
+                           asp-action="Details"
+                           asp-route-id="@film.Id">
+                            Détails
+                        </a>
+
+                        <a class="btn btn-cart"
+                           asp-controller="Cart"
+                           asp-action="Add"
+                           asp-route-id="@film.Id"
+                           title="Ajouter au panier">
+                            <i class="bi bi-cart-plus"></i>
+                        </a>
+
+                        @if (isAdmin)
+                        {
+                            <a class="btn btn-icon"
+                               asp-action="Edit"
+                               asp-route-id="@film.Id"
+                               title="Modifier">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+
+                            <a class="btn btn-icon btn-delete"
+                               asp-action="Delete"
+                               asp-route-id="@film.Id"
+                               title="Supprimer">
+                                <i class="bi bi-trash3"></i>
+                            </a>
+                        }
+
+                    </div>
+                </div>
+            </article>
         }
+
     </div>
 }

@@ -34,4 +34,5 @@ public class FilmFormViewModel
 
     [Display(Name = "Affiche")]
     public IFormFile? Poster { get; set; }
+    public double Prix { get; set; } = 10.0;
 }

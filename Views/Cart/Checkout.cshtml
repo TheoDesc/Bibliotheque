@@ -1,0 +1,92 @@
+﻿@model List<FilmLibrary.Models.CartItem>
+
+@{
+    ViewData["Title"] = "Paiement";
+    var total = Model.Sum(x => x.Prix);
+}
+
+<section class="checkout-page">
+
+    <div class="checkout-header">
+        <div class="catalog-eyebrow">
+            <i class="bi bi-credit-card"></i>
+            PAIEMENT
+        </div>
+
+        <h1>Finaliser votre commande</h1>
+
+        <p>
+            Vérifiez votre commande avant de continuer.
+        </p>
+    </div>
+
+    <div class="checkout-layout">
+
+        <div class="checkout-card">
+
+            <h2>Votre commande</h2>
+
+            @foreach (var item in Model)
+            {
+                <div class="checkout-item">
+
+                    <div>
+                        <strong>@item.Title</strong>
+                        <span>Location du film</span>
+                    </div>
+
+                    <strong>
+                        @item.Prix.ToString("0.00") €
+                    </strong>
+
+                </div>
+            }
+
+            <div class="checkout-separator"></div>
+
+            <div class="checkout-total">
+                <span>Total</span>
+                <strong>@total.ToString("0.00") €</strong>
+            </div>
+
+        </div>
+
+        <div class="payment-card">
+
+            <div class="payment-icon">
+                <i class="bi bi-lock-fill"></i>
+            </div>
+
+            <h2>Paiement sécurisé</h2>
+
+            <p>
+                Ceci est une page de démonstration.
+                Aucun paiement réel ne sera effectué.
+            </p>
+
+            <div class="fake-payment-info">
+                <i class="bi bi-info-circle"></i>
+                <span>
+                    Cette étape simule le processus de paiement.
+                </span>
+            </div>
+
+            <a asp-controller="Cart"
+               asp-action="PaymentSuccess"
+               class="btn btn-checkout">
+                Suivant
+                <i class="bi bi-arrow-right"></i>
+            </a>
+
+            <a asp-controller="Cart"
+               asp-action="Index"
+               class="continue-shopping">
+                <i class="bi bi-arrow-left"></i>
+                Retour au panier
+            </a>
+
+        </div>
+
+    </div>
+
+</section>

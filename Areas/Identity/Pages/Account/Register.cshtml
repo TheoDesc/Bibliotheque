@@ -1,49 +1,182 @@
 @page
-@model RegisterModel
+@model FilmLibrary.Areas.Identity.Pages.Account.RegisterModel
+
 @{
-    ViewData["Title"] = "Inscription";
+    ViewData["Title"] = "Créer un compte";
 }
 
-<div class="auth-wrap">
-    <section class="auth-art d-none d-lg-flex">
-        <partial name="_AuthArt" />
-        <h2>Rejoins la séance !</h2>
-        <p>Crée ton compte en quelques secondes.</p>
-    </section>
+<div class="auth-page">
 
-    <section class="auth-card">
-        <span class="sticker sticker-coral">Nouveau ✨</span>
-        <h1>Inscription</h1>
-        <p class="text-muted-ink">Un email, un mot de passe, et c'est parti.</p>
+    <div class="auth-card">
 
-        <form id="registerForm" method="post" asp-route-returnUrl="@Model.ReturnUrl">
-            <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+        <div class="auth-header">
 
-            <div class="mb-3">
-                <label asp-for="Input.Email" class="form-label">Email</label>
-                <input asp-for="Input.Email" class="form-control" autocomplete="username" placeholder="toi@exemple.com" />
-                <span asp-validation-for="Input.Email" class="text-danger small"></span>
-            </div>
-            <div class="mb-3">
-                <label asp-for="Input.Password" class="form-label">Mot de passe</label>
-                <input asp-for="Input.Password" class="form-control" autocomplete="new-password" />
-                <span asp-validation-for="Input.Password" class="text-danger small"></span>
-                <div class="form-text">6 caractères minimum, avec majuscule, minuscule, chiffre et caractère spécial.</div>
-            </div>
-            <div class="mb-4">
-                <label asp-for="Input.ConfirmPassword" class="form-label">Confirmer le mot de passe</label>
-                <input asp-for="Input.ConfirmPassword" class="form-control" autocomplete="new-password" />
-                <span asp-validation-for="Input.ConfirmPassword" class="text-danger small"></span>
+            <div class="auth-logo">
+                <i class="bi bi-film"></i>
             </div>
 
-            <button type="submit" class="btn btn-violet w-100 btn-lg">Créer mon compte</button>
+            <div>
+                <h1>Créer un compte</h1>
+                <p>Rejoignez CinéBiblio</p>
+            </div>
+
+        </div>
+
+        <form method="post">
+
+            <div asp-validation-summary="ModelOnly"
+                 class="validation-summary"></div>
+
+            <div class="form-group">
+                <label asp-for="Input.Email"></label>
+
+                <input asp-for="Input.Email"
+                       class="form-control-custom"
+                       autocomplete="email"
+                       placeholder="vous@exemple.com" />
+
+                <span asp-validation-for="Input.Email"
+                      class="field-error"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Input.Password"></label>
+
+                <input asp-for="Input.Password"
+                       class="form-control-custom"
+                       autocomplete="new-password"
+                       placeholder="••••••••" />
+
+                <span asp-validation-for="Input.Password"
+                      class="field-error"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Input.ConfirmPassword"></label>
+
+                <input asp-for="Input.ConfirmPassword"
+                       class="form-control-custom"
+                       autocomplete="new-password"
+                       placeholder="••••••••" />
+
+                <span asp-validation-for="Input.ConfirmPassword"
+                      class="field-error"></span>
+            </div>
+
+            <div class="form-group">
+
+                <label asp-for="Input.Role">
+                    Type de compte
+                </label>
+
+                <div class="role-options">
+
+                    <label class="role-option">
+                        <input asp-for="Input.Role"
+                               type="radio"
+                               value="User"
+                               checked />
+
+                        <span class="role-content">
+                            <i class="bi bi-person"></i>
+
+                            <span>
+                                <strong>Utilisateur</strong>
+                                <small>
+                                    Consulter le catalogue et louer des films
+                                </small>
+                            </span>
+                        </span>
+                    </label>
+
+                    <label class="role-option">
+                        <input asp-for="Input.Role"
+                               type="radio"
+                               value="Admin" />
+
+                        <span class="role-content">
+                            <i class="bi bi-shield-lock"></i>
+
+                            <span>
+                                <strong>Administrateur</strong>
+                                <small>
+                                    Gérer les films du catalogue
+                                </small>
+                            </span>
+                        </span>
+                    </label>
+
+                </div>
+
+                <span asp-validation-for="Input.Role"
+                      class="field-error"></span>
+
+            </div>
+
+            <div class="form-group admin-code-group"
+                 id="adminCodeContainer">
+
+                <label asp-for="Input.AdminCode">
+                    Code administrateur
+                </label>
+
+                <input asp-for="Input.AdminCode"
+                       class="form-control-custom"
+                       type="password"
+                       autocomplete="off"
+                       placeholder="Code administrateur" />
+
+                <small>
+                    Le code est nécessaire pour créer un compte administrateur.
+                </small>
+
+                <span asp-validation-for="Input.AdminCode"
+                      class="field-error"></span>
+            </div>
+
+            <button type="submit"
+                    class="auth-submit">
+                Créer mon compte
+                <i class="bi bi-arrow-right"></i>
+            </button>
+
         </form>
 
-        <p class="text-center mt-4 mb-0">
-            Déjà inscrit ?
-            <a asp-page="./Login" asp-route-returnUrl="@Model.ReturnUrl" class="link-pop">Connecte-toi</a>
-        </p>
-    </section>
+    </div>
+
 </div>
 
-@section Scripts { <partial name="_ValidationScriptsPartial" /> }
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        const roleInputs = document.querySelectorAll(
+            'input[name="Input.Role"]'
+        );
+
+        const adminCodeContainer =
+            document.getElementById("adminCodeContainer");
+
+        function updateAdminCodeVisibility() {
+            const selectedRole =
+                document.querySelector(
+                    'input[name="Input.Role"]:checked'
+                )?.value;
+
+            if (selectedRole === "Admin") {
+                adminCodeContainer.style.display = "block";
+            } else {
+                adminCodeContainer.style.display = "none";
+            }
+        }
+
+        roleInputs.forEach(input => {
+            input.addEventListener(
+                "change",
+                updateAdminCodeVisibility
+            );
+        });
+
+        updateAdminCodeVisibility();
+    </script>
+}

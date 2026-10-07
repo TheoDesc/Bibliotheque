@@ -14,6 +14,9 @@ builder.Services
     .AddEntityFrameworkStores<ApplicationDbContext>();
 
 builder.Services.AddControllersWithViews();
+builder.Services.AddRazorPages();
+builder.Services.AddDistributedMemoryCache();
+builder.Services.AddSession();
 
 // Injection de dépendances (DIP) : on dépend des interfaces
 builder.Services.AddScoped<IFilmService, FilmService>();
@@ -33,6 +36,7 @@ if (!app.Environment.IsDevelopment())
 
 app.UseStaticFiles();   // sert aussi wwwroot/uploads
 app.UseRouting();
+app.UseSession();
 app.UseAuthentication();
 app.UseAuthorization();
 

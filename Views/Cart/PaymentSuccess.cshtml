@@ -1,0 +1,22 @@
+﻿@{
+    ViewData["Title"] = "Commande confirmée";
+}
+
+<div class="empty-state">
+
+    <i class="bi bi-check-circle"></i>
+
+    <h2>Commande confirmée</h2>
+
+    <p>
+        Votre commande a bien été enregistrée.
+        Ceci était un paiement de démonstration.
+    </p>
+
+    <a asp-controller="Films"
+       asp-action="Index"
+       class="btn btn-primary-custom">
+        Retour au catalogue
+    </a>
+
+</div>
