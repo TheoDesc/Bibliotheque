@@ -1,141 +1,387 @@
-ï»¿@model List<FilmLibrary.Models.CartItem>
+@model IReadOnlyList<FilmLibrary.Models.Film>
 
 @{
-    ViewData["Title"] = "Mon panier";
-    var total = Model.Sum(x => x.Prix);
+ViewData["Title"] = "Catalogue";
+var genres = ViewBag.Genres as IEnumerable<FilmLibrary.Models.Genre>
+              ?? Enumerable.Empty<FilmLibrary.Models.Genre>();
+
+string? currentSearch = ViewBag.Search as string;
+string? currentGenre = ViewBag.Genre as string;
+double? currentMinPrice = ViewBag.MinPrice as double?;
+double? currentMaxPrice = ViewBag.MaxPrice as double?;
+
 }
 
-<section class="cart-header">
+<div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-end gap-3 mb-4">
     <div>
-        <div class="catalog-eyebrow">
-            <i class="bi bi-cart3"></i>
-            COMMANDE
-        </div>
+        <span class="text-uppercase small fw-semibold text-primary">
+            CinéBiblio
+        </span>
 
-        <h1>Mon panier</h1>
+    <h1 class="display-6 fw-bold mb-1">
+        Catalogue
+    </h1>
 
-        <p>
-            Retrouvez les films que vous souhaitez louer.
-        </p>
-    </div>
-</section>
+    <p class="text-muted mb-0">
+        Découvrez notre sélection de films.
+    </p>
+</div>
 
-@if (!Model.Any())
+@if (User.IsInRole("Admin"))
 {
-    <div class="empty-state">
-
-        <i class="bi bi-cart-x"></i>
-
-        <h2>Votre panier est vide</h2>
-
-        <p>
-            Ajoutez des films depuis le catalogue pour commencer votre commande.
-        </p>
-
-        <a asp-controller="Films"
-           asp-action="Index"
-           class="btn btn-primary-custom">
-            <i class="bi bi-arrow-left"></i>
-            Retour au catalogue
-        </a>
-
-    </div>
+    <a asp-action="Create" class="btn btn-primary">
+        <i class="bi bi-plus-lg me-1"></i>
+        Ajouter un film
+    </a>
 }
-else
-{
-    <div class="cart-layout">
 
-        <div class="cart-items">
+</div>
 
-            @foreach (var item in Model)
-            {
-                <article class="cart-item">
+@if (TempData["Error"] != null)
+{ <div class="alert alert-danger alert-dismissible fade show" role="alert"> <i class="bi bi-exclamation-circle me-2"></i>
+@TempData["Error"]
 
-                    <div class="cart-poster">
+    <button type="button"
+            class="btn-close"
+            data-bs-dismiss="alert"
+            aria-label="Fermer">
+    </button>
+</div>
 
-                        @if (!string.IsNullOrEmpty(item.PosterPath))
+}
+
+@if (TempData["Success"] != null)
+{ <div class="alert alert-success alert-dismissible fade show" role="alert"> <i class="bi bi-check-circle me-2"></i>
+@TempData["Success"]
+
+    <button type="button"
+            class="btn-close"
+            data-bs-dismiss="alert"
+            aria-label="Fermer">
+    </button>
+</div>
+
+}
+
+<!-- Filtres -->
+
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-body p-4">
+
+    <div class="d-flex align-items-center gap-2 mb-3">
+        <i class="bi bi-funnel text-primary"></i>
+        <h5 class="mb-0 fw-semibold">
+            Rechercher et filtrer
+        </h5>
+    </div>
+
+    <form asp-controller="Films"
+          asp-action="Index"
+          method="get">
+
+        <div class="row g-3 align-items-end">
+
+            <!-- Recherche -->
+            <div class="col-12 col-lg-4">
+                <label for="search" class="form-label fw-semibold">
+                    Recherche
+                </label>
+
+                <div class="input-group">
+                    <span class="input-group-text">
+                        <i class="bi bi-search"></i>
+                    </span>
+
+                    <input type="text"
+                           id="search"
+                           name="search"
+                           value="@currentSearch"
+                           class="form-control"
+                           placeholder="Titre, réalisateur ou description..." />
+                </div>
+            </div>
+
+            <!-- Genre -->
+            <div class="col-12 col-md-4 col-lg-2">
+                <label for="genre" class="form-label fw-semibold">
+                    Genre
+                </label>
+
+                <select id="genre"
+                        name="genre"
+                        class="form-select">
+
+                    <option value="">
+                        Tous
+                    </option>
+
+                    @foreach (var genre in genres)
+                    {
+                        if (currentGenre == genre.Name)
                         {
-                            <img src="@item.PosterPath"
-                                 alt="@item.Title" />
+                            <option value="@genre.Name" selected>
+                                @genre.Name
+                            </option>
                         }
                         else
                         {
-                            <div class="poster-placeholder">
-                                <i class="bi bi-film"></i>
-                            </div>
+                            <option value="@genre.Name">
+                                @genre.Name
+                            </option>
+                        }
+                    }
+
+                </select>
+            </div>
+
+            <!-- Prix minimum -->
+            <div class="col-6 col-md-4 col-lg-2">
+                <label for="minPrice" class="form-label fw-semibold">
+                    Prix min.
+                </label>
+
+                <div class="input-group">
+                    <input type="number"
+                           id="minPrice"
+                           name="minPrice"
+                           value="@currentMinPrice"
+                           class="form-control"
+                           min="0"
+                           step="0.01"
+                           placeholder="0" />
+
+                    <span class="input-group-text">
+                        €
+                    </span>
+                </div>
+            </div>
+
+            <!-- Prix maximum -->
+            <div class="col-6 col-md-4 col-lg-2">
+                <label for="maxPrice" class="form-label fw-semibold">
+                    Prix max.
+                </label>
+
+                <div class="input-group">
+                    <input type="number"
+                           id="maxPrice"
+                           name="maxPrice"
+                           value="@currentMaxPrice"
+                           class="form-control"
+                           min="0"
+                           step="0.01"
+                           placeholder="50" />
+
+                    <span class="input-group-text">
+                        €
+                    </span>
+                </div>
+            </div>
+
+            <!-- Boutons -->
+            <div class="col-12 col-lg-2 d-flex gap-2">
+                <button type="submit"
+                        class="btn btn-primary flex-grow-1">
+                    <i class="bi bi-funnel me-1"></i>
+                    Filtrer
+                </button>
+
+                <a asp-controller="Films"
+                   asp-action="Index"
+                   class="btn btn-outline-secondary"
+                   title="Réinitialiser">
+                    <i class="bi bi-x-lg"></i>
+                </a>
+            </div>
+
+        </div>
+
+    </form>
+</div>
+
+</div>
+
+<!-- Résultats -->
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="h4 mb-0">
+        Films disponibles
+    </h2>
+
+<span class="badge text-bg-light border">
+    @Model.Count film@(Model.Count > 1 ? "s" : "")
+</span>
+
+</div>
+
+@if (!Model.Any())
+{ <div class="card border-0 shadow-sm"> <div class="card-body text-center py-5">
+
+        <i class="bi bi-film display-4 text-muted"></i>
+
+        <h3 class="h5 mt-3">
+            Aucun film trouvé
+        </h3>
+
+        <p class="text-muted mb-3">
+            Aucun film ne correspond à vos critères de recherche.
+        </p>
+
+        <a asp-action="Index"
+           class="btn btn-outline-primary">
+            Réinitialiser les filtres
+        </a>
+
+    </div>
+</div>
+
+}
+else
+{ <div class="row g-4">
+
+    @foreach (var film in Model)
+    {
+        <div class="col-12 col-sm-6 col-lg-4 col-xl-3">
+
+            <div class="card h-100 border-0 shadow-sm film-card">
+
+                @if (!string.IsNullOrWhiteSpace(film.PosterPath))
+                {
+                    <img src="@film.PosterPath"
+                         class="card-img-top"
+                         alt="Affiche de @film.Title"
+                         style="height: 280px; object-fit: cover;" />
+                }
+                else
+                {
+                    <div class="film-poster-placeholder d-flex align-items-center justify-content-center"
+                         style="height: 280px;">
+                        <i class="bi bi-film display-4 text-muted"></i>
+                    </div>
+                }
+
+                <div class="card-body d-flex flex-column">
+
+                    <div class="mb-2">
+
+                        @if (film.Genre != null)
+                        {
+                            <span class="badge rounded-pill text-bg-light border">
+                                @film.Genre.Name
+                            </span>
+                        }
+
+                        @if (film.Stock > 0)
+                        {
+                            <span class="badge rounded-pill text-bg-success">
+                                Disponible
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="badge rounded-pill text-bg-danger">
+                                Rupture
+                            </span>
                         }
 
                     </div>
 
-                    <div class="cart-item-content">
+                    <h3 class="h5 fw-bold mb-2">
+                        @film.Title
+                    </h3>
 
-                        <div>
-                            <h2>@item.Title</h2>
+                    <div class="small text-muted mb-3">
 
-                            <p>
-                                Location du film
-                            </p>
+                        @if (film.ReleaseYear > 0)
+                        {
+                            <span>
+                                <i class="bi bi-calendar3 me-1"></i>
+                                @film.ReleaseYear
+                            </span>
+                        }
+
+                        @if (!string.IsNullOrWhiteSpace(film.Director))
+                        {
+                            <span class="ms-2">
+                                <i class="bi bi-person me-1"></i>
+                                @film.Director
+                            </span>
+                        }
+
+                    </div>
+
+                    @if (!string.IsNullOrWhiteSpace(film.Description))
+                    {
+                        <p class="card-text text-muted small film-description">
+                            @film.Description
+                        </p>
+                    }
+
+                    <div class="mt-auto">
+
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+
+                            <span class="fs-5 fw-bold text-primary">
+                                @film.Prix.ToString("0.00") €
+                            </span>
+
+                            <span class="small text-muted">
+                                Stock : @film.Stock
+                            </span>
+
                         </div>
 
-                        <div class="cart-item-bottom">
+                        <div class="d-grid gap-2">
 
-                            <strong>
-                                @item.Prix.ToString("0.00") â‚¬
-                            </strong>
-
-                            <a asp-controller="Cart"
-                               asp-action="Remove"
-                               asp-route-id="@item.FilmId"
-                               class="remove-link">
-                                <i class="bi bi-trash3"></i>
-                                Retirer
+                            <a asp-action="Details"
+                               asp-route-id="@film.Id"
+                               class="btn btn-outline-secondary">
+                                <i class="bi bi-eye me-1"></i>
+                                Détails
                             </a>
+
+                            @if (film.Stock > 0)
+                            {
+                                <a asp-controller="Cart"
+                                   asp-action="Add"
+                                   asp-route-id="@film.Id"
+                                   class="btn btn-primary">
+                                    <i class="bi bi-cart-plus me-1"></i>
+                                    Ajouter au panier
+                                </a>
+                            }
+
+                            @if (User.IsInRole("Admin"))
+                            {
+                                <div class="d-flex gap-2">
+
+                                    <a asp-action="Edit"
+                                       asp-route-id="@film.Id"
+                                       class="btn btn-sm btn-outline-warning flex-fill">
+                                        <i class="bi bi-pencil"></i>
+                                        Modifier
+                                    </a>
+
+                                    <a asp-action="Delete"
+                                       asp-route-id="@film.Id"
+                                       class="btn btn-sm btn-outline-danger flex-fill">
+                                        <i class="bi bi-trash"></i>
+                                        Supprimer
+                                    </a>
+
+                                </div>
+                            }
 
                         </div>
 
                     </div>
 
-                </article>
-            }
+                </div>
+            </div>
 
         </div>
+    }
 
-        <aside class="cart-summary">
+</div>
 
-            <h2>RÃ©capitulatif</h2>
-
-            <div class="summary-line">
-                <span>Films</span>
-                <span>@Model.Count</span>
-            </div>
-
-            <div class="summary-line">
-                <span>Sous-total</span>
-                <span>@total.ToString("0.00") â‚¬</span>
-            </div>
-
-            <div class="summary-separator"></div>
-
-            <div class="summary-total">
-                <span>Total</span>
-                <strong>@total.ToString("0.00") â‚¬</strong>
-            </div>
-
-            <a asp-controller="Cart"
-               asp-action="Checkout"
-               class="btn btn-checkout">
-                ProcÃ©der au paiement
-                <i class="bi bi-arrow-right"></i>
-            </a>
-
-            <a asp-controller="Films"
-               asp-action="Index"
-               class="continue-shopping">
-                <i class="bi bi-arrow-left"></i>
-                Continuer mes achats
-            </a>
-
-        </aside>
-
-    </div>
 }

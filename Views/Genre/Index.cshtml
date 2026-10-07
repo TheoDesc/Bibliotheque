@@ -1,0 +1,232 @@
+﻿@model IReadOnlyList<FilmLibrary.Models.Film>
+
+@{
+    ViewData["Title"] = "Catalogue";
+    var genres = ViewBag.Genres as IEnumerable<FilmLibrary.Models.Genre>
+                  ?? Enumerable.Empty<FilmLibrary.Models.Genre>();
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="h2 mb-1">Catalogue des films</h1>
+        <p class="text-muted mb-0">
+            Recherchez et filtrez les films.
+        </p>
+    </div>
+
+    @if (User.IsInRole("Admin"))
+    {
+        <a asp-action="Create"
+           class="btn btn-primary">
+            Ajouter un film
+        </a>
+    }
+</div>
+
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-body">
+
+        <form asp-action="Index"
+              method="get">
+
+            <div class="row g-3">
+
+                <div class="col-12 col-md-5">
+                    <label class="form-label fw-semibold">
+                        Recherche
+                    </label>
+
+                    <input type="text"
+                           name="search"
+                           value="@ViewBag.Search"
+                           class="form-control"
+                           placeholder="Titre, réalisateur, description..." />
+                </div>
+
+                <div class="col-12 col-md-3">
+                    <label class="form-label fw-semibold">
+                        Genre
+                    </label>
+
+                    <select name="genre"
+                            class="form-select">
+
+                        <option value="">
+                            Tous les genres
+                        </option>
+
+                        @foreach (var item in genres)
+                        {
+                            if ((string?)ViewBag.Genre == item.Name)
+                            {
+                                <option value="@item.Name"
+                                        selected>
+                                    @item.Name
+                                </option>
+                            }
+                            else
+                            {
+                                <option value="@item.Name">
+                                    @item.Name
+                                </option>
+                            }
+                        }
+
+                    </select>
+                </div>
+
+                <div class="col-6 col-md-2">
+                    <label class="form-label fw-semibold">
+                        Prix min.
+                    </label>
+
+                    <input type="number"
+                           name="minPrice"
+                           value="@ViewBag.MinPrice"
+                           step="0.01"
+                           class="form-control" />
+                </div>
+
+                <div class="col-6 col-md-2">
+                    <label class="form-label fw-semibold">
+                        Prix max.
+                    </label>
+
+                    <input type="number"
+                           name="maxPrice"
+                           value="@ViewBag.MaxPrice"
+                           step="0.01"
+                           class="form-control" />
+                </div>
+
+            </div>
+
+            <div class="d-flex gap-2 mt-3">
+
+                <button type="submit"
+                        class="btn btn-primary">
+                    Rechercher
+                </button>
+
+                <a asp-action="Index"
+                   class="btn btn-outline-secondary">
+                    Réinitialiser
+                </a>
+
+            </div>
+
+        </form>
+
+    </div>
+</div>
+
+@if (!Model.Any())
+{
+    <div class="card border-0 shadow-sm">
+        <div class="card-body text-center py-5">
+
+            <h2 class="h5">
+                Aucun film trouvé
+            </h2>
+
+            <p class="text-muted mb-0">
+                Essayez de modifier vos critères de recherche.
+            </p>
+
+        </div>
+    </div>
+}
+else
+{
+    <div class="row g-4">
+
+        @foreach (var film in Model)
+        {
+            <div class="col-12 col-md-6 col-lg-4">
+
+                <div class="card h-100 border-0 shadow-sm">
+
+                    @if (!string.IsNullOrWhiteSpace(film.PosterPath))
+                    {
+                        <img src="@film.PosterPath"
+                             class="card-img-top"
+                             alt="@film.Title"
+                             style="height: 300px; object-fit: cover;" />
+                    }
+
+                    <div class="card-body">
+
+                        <h2 class="h5 mb-2">
+                            @film.Title
+                        </h2>
+
+                        @if (film.Genre != null)
+                        {
+                            <span class="badge text-bg-light border mb-2">
+                                @film.Genre.Name
+                            </span>
+                        }
+
+                        @if (!string.IsNullOrWhiteSpace(film.Director))
+                        {
+                            <p class="text-muted mb-2">
+                                Réalisé par @film.Director
+                            </p>
+                        }
+
+                        @if (film.ReleaseYear.HasValue)
+                        {
+                            <p class="text-muted small mb-2">
+                                @film.ReleaseYear
+                            </p>
+                        }
+
+                        @if (!string.IsNullOrWhiteSpace(film.Description))
+                        {
+                            <p class="card-text">
+                                @film.Description
+                            </p>
+                        }
+
+                        <div class="fw-semibold mb-3">
+                            @film.Prix.ToString("0.00") €
+                        </div>
+
+                    </div>
+
+                    <div class="card-footer bg-white border-0">
+
+                        <div class="d-flex gap-2">
+
+                            <a asp-action="Details"
+                               asp-route-id="@film.Id"
+                               class="btn btn-sm btn-outline-primary">
+                                Détails
+                            </a>
+
+                            @if (User.IsInRole("Admin"))
+                            {
+                                <a asp-action="Edit"
+                                   asp-route-id="@film.Id"
+                                   class="btn btn-sm btn-outline-warning">
+                                    Modifier
+                                </a>
+
+                                <a asp-action="Delete"
+                                   asp-route-id="@film.Id"
+                                   class="btn btn-sm btn-outline-danger">
+                                    Supprimer
+                                </a>
+                            }
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+        }
+
+    </div>
+}

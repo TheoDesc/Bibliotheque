@@ -1,89 +1,111 @@
 ﻿@model List<FilmLibrary.Models.CartItem>
 
 @{
-    ViewData["Title"] = "Paiement";
-    var total = Model.Sum(x => x.Prix);
+    ViewData["Title"] = "Finaliser la commande";
+    var total = Model.Sum(x => x.Prix * x.Quantity);
 }
 
 <section class="checkout-page">
 
     <div class="checkout-header">
+
         <div class="catalog-eyebrow">
-            <i class="bi bi-credit-card"></i>
-            PAIEMENT
+            <i class="bi bi-box-seam"></i>
+            COMMANDE
         </div>
 
         <h1>Finaliser votre commande</h1>
 
         <p>
-            Vérifiez votre commande avant de continuer.
+            Renseignez votre adresse de livraison et vérifiez votre commande.
         </p>
+
     </div>
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger">
+            @TempData["Error"]
+        </div>
+    }
 
     <div class="checkout-layout">
 
         <div class="checkout-card">
 
-            <h2>Votre commande</h2>
+            <h2>Adresse de livraison</h2>
 
-            @foreach (var item in Model)
-            {
-                <div class="checkout-item">
+            <form asp-action="ConfirmOrder"
+                  method="post">
 
-                    <div>
-                        <strong>@item.Title</strong>
-                        <span>Location du film</span>
+                @Html.AntiForgeryToken()
+
+                <div class="mb-4">
+
+                    <label for="deliveryAddress"
+                           class="form-label">
+                        Adresse complète
+                    </label>
+
+                    <textarea id="deliveryAddress"
+                              name="deliveryAddress"
+                              class="form-control"
+                              rows="4"
+                              placeholder="12 rue de Paris, 75001 Paris"
+                              required></textarea>
+
+                </div>
+
+                <h2 class="mt-4">
+                    Votre commande
+                </h2>
+
+                @foreach (var item in Model)
+                {
+                    <div class="checkout-item">
+
+                        <div>
+
+                            <strong>
+                                @item.Title
+                            </strong>
+
+                            <span>
+                                @item.Quantity ×
+                                @item.Prix.ToString("0.00") €
+                            </span>
+
+                        </div>
+
+                        <strong>
+                            @((item.Prix * item.Quantity).ToString("0.00")) €
+                        </strong>
+
                     </div>
+                }
+
+                <div class="checkout-separator"></div>
+
+                <div class="checkout-total">
+
+                    <span>Total</span>
 
                     <strong>
-                        @item.Prix.ToString("0.00") €
+                        @total.ToString("0.00") €
                     </strong>
 
                 </div>
-            }
 
-            <div class="checkout-separator"></div>
+                <button type="submit"
+                        class="btn btn-checkout mt-4">
 
-            <div class="checkout-total">
-                <span>Total</span>
-                <strong>@total.ToString("0.00") €</strong>
-            </div>
+                    Confirmer la commande
 
-        </div>
+                    <i class="bi bi-arrow-right"></i>
 
-        <div class="payment-card">
+                </button>
 
-            <div class="payment-icon">
-                <i class="bi bi-lock-fill"></i>
-            </div>
-
-            <h2>Paiement sécurisé</h2>
-
-            <p>
-                Ceci est une page de démonstration.
-                Aucun paiement réel ne sera effectué.
-            </p>
-
-            <div class="fake-payment-info">
-                <i class="bi bi-info-circle"></i>
-                <span>
-                    Cette étape simule le processus de paiement.
-                </span>
-            </div>
-
-            <a asp-controller="Cart"
-               asp-action="PaymentSuccess"
-               class="btn btn-checkout">
-                Suivant
-                <i class="bi bi-arrow-right"></i>
-            </a>
-
-            <a asp-controller="Cart"
-               asp-action="Index"
-               class="continue-shopping">
-                <i class="bi bi-arrow-left"></i>
-                Retour au panier
-            </a>
+            </form>
 
         </div>
 

@@ -6,105 +6,165 @@ namespace FilmLibrary.Data;
 
 public static class DbInitializer
 {
-    public const string AdminRole = "Admin";
-    public const string UserRole = "User";
-
-    public static async Task InitializeAsync(IServiceProvider services)
+    public static async Task InitializeAsync(IServiceProvider serviceProvider)
     {
-        var db = services.GetRequiredService<ApplicationDbContext>();
+        var context = serviceProvider.GetRequiredService<ApplicationDbContext>();
+        var userManager = serviceProvider.GetRequiredService<UserManager<IdentityUser>>();
+        var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
 
-        await db.Database.EnsureCreatedAsync();
+        await context.Database.MigrateAsync();
 
-        // Création des rôles
-        var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
-
-        foreach (var role in new[] { AdminRole, UserRole })
+        if (!await roleManager.RoleExistsAsync("Admin"))
         {
-            if (!await roleManager.RoleExistsAsync(role))
+            await roleManager.CreateAsync(new IdentityRole("Admin"));
+        }
+
+        if (!await roleManager.RoleExistsAsync("User"))
+        {
+            await roleManager.CreateAsync(new IdentityRole("User"));
+        }
+
+        var adminEmail = "admin@film-library.com";
+        var adminPassword = "Admin123!";
+
+        var admin = await userManager.FindByEmailAsync(adminEmail);
+
+        if (admin == null)
+        {
+            admin = new IdentityUser
             {
-                await roleManager.CreateAsync(new IdentityRole(role));
+                UserName = adminEmail,
+                Email = adminEmail,
+                EmailConfirmed = true
+            };
+
+            var result = await userManager.CreateAsync(
+                admin,
+                adminPassword);
+
+            if (result.Succeeded)
+            {
+                await userManager.AddToRoleAsync(admin, "Admin");
+            }
+        }
+        else if (!await userManager.IsInRoleAsync(admin, "Admin"))
+        {
+            await userManager.AddToRoleAsync(admin, "Admin");
+        }
+
+        var genres = new[]
+        {
+            "Action",
+            "Comédie",
+            "Drame",
+            "Science-fiction",
+            "Horreur",
+            "Animation"
+        };
+
+        foreach (var genreName in genres)
+        {
+            if (!await context.Genres.AnyAsync(g => g.Name == genreName))
+            {
+                context.Genres.Add(new Genre
+                {
+                    Name = genreName
+                });
             }
         }
 
-        // Films de démonstration
-        if (!await db.Films.AnyAsync())
+        await context.SaveChangesAsync();
+
+        if (!await context.Films.AnyAsync())
         {
-            db.Films.AddRange(
+            var action = await context.Genres
+                .FirstAsync(g => g.Name == "Action");
+
+            var comedy = await context.Genres
+                .FirstAsync(g => g.Name == "Comédie");
+
+            var drama = await context.Genres
+                .FirstAsync(g => g.Name == "Drame");
+
+            var sciFi = await context.Genres
+                .FirstAsync(g => g.Name == "Science-fiction");
+
+            var horror = await context.Genres
+                .FirstAsync(g => g.Name == "Horreur");
+
+            var animation = await context.Genres
+                .FirstAsync(g => g.Name == "Animation");
+
+            context.Films.AddRange(
                 new Film
                 {
                     Title = "Inception",
                     Director = "Christopher Nolan",
-                    Genre = "Science-fiction",
                     ReleaseYear = 2010,
                     DurationMinutes = 148,
-                    Description = "Un voleur spécialisé dans l'extraction de secrets à l'intérieur des rêves reçoit une mission inverse : implanter une idée.",
-                    Prix = 4.99
+                    GenreId = sciFi.Id,
+                    Description = "Un voleur spécialisé dans l'extraction de secrets par les rêves doit accomplir une mission impossible.",
+                    Prix = 12.99,
+                    Stock = 5
                 },
                 new Film
                 {
-                    Title = "Le Parrain",
-                    Director = "Francis Ford Coppola",
-                    Genre = "Drame",
-                    ReleaseYear = 1972,
-                    DurationMinutes = 175,
-                    Description = "La saga d'une famille de la mafia new-yorkaise et de la passation du pouvoir entre un père et son fils.",
-                    Prix = 3.99
+                    Title = "The Dark Knight",
+                    Director = "Christopher Nolan",
+                    ReleaseYear = 2008,
+                    DurationMinutes = 152,
+                    GenreId = action.Id,
+                    Description = "Batman affronte le Joker, un criminel qui plonge Gotham dans le chaos.",
+                    Prix = 14.99,
+                    Stock = 4
                 },
                 new Film
                 {
-                    Title = "Parasite",
-                    Director = "Bong Joon-ho",
-                    Genre = "Thriller",
-                    ReleaseYear = 2019,
-                    DurationMinutes = 132,
-                    Description = "Une famille pauvre s'infiltre peu à peu dans la vie d'une famille aisée.",
-                    Prix = 4.99
+                    Title = "Intouchables",
+                    Director = "Olivier Nakache",
+                    ReleaseYear = 2011,
+                    DurationMinutes = 112,
+                    GenreId = comedy.Id,
+                    Description = "Une amitié improbable entre un homme riche devenu tétraplégique et son aide à domicile.",
+                    Prix = 9.99,
+                    Stock = 6
                 },
                 new Film
                 {
-                    Title = "Le Voyage de Chihiro",
-                    Director = "Hayao Miyazaki",
-                    Genre = "Animation",
-                    ReleaseYear = 2001,
-                    DurationMinutes = 125,
-                    Description = "Une fillette se retrouve piégée dans un monde d'esprits et doit travailler pour sauver ses parents.",
-                    Prix = 3.99
+                    Title = "The Shawshank Redemption",
+                    Director = "Frank Darabont",
+                    ReleaseYear = 1994,
+                    DurationMinutes = 142,
+                    GenreId = drama.Id,
+                    Description = "Un homme injustement condamné trouve espoir et amitié derrière les murs d'une prison.",
+                    Prix = 11.99,
+                    Stock = 3
                 },
                 new Film
                 {
-                    Title = "Mad Max: Fury Road",
-                    Director = "George Miller",
-                    Genre = "Action",
-                    ReleaseYear = 2015,
-                    DurationMinutes = 120,
-                    Description = "Une course-poursuite dans le désert pour échapper à un tyran.",
-                    Prix = 4.99
+                    Title = "Alien",
+                    Director = "Ridley Scott",
+                    ReleaseYear = 1979,
+                    DurationMinutes = 117,
+                    GenreId = horror.Id,
+                    Description = "L'équipage d'un vaisseau spatial rencontre une créature extraterrestre terrifiante.",
+                    Prix = 10.99,
+                    Stock = 4
                 },
                 new Film
                 {
-                    Title = "Amélie Poulain",
-                    Director = "Jean-Pierre Jeunet",
-                    Genre = "Comédie",
-                    ReleaseYear = 2001,
-                    DurationMinutes = 122,
-                    Description = "Une jeune serveuse parisienne décide d'améliorer la vie de ceux qui l'entourent.",
-                    Prix = 3.99
-                });
+                    Title = "Le Roi Lion",
+                    Director = "Roger Allers",
+                    ReleaseYear = 1994,
+                    DurationMinutes = 88,
+                    GenreId = animation.Id,
+                    Description = "Simba doit retrouver sa place de roi après la mort de son père.",
+                    Prix = 8.99,
+                    Stock = 7
+                }
+            );
 
-            await db.SaveChangesAsync();
+            await context.SaveChangesAsync();
         }
-
-        // Ajoute une image aux films qui n'en ont pas
-        var withoutPoster = await db.Films
-            .Where(f => f.PosterPath == null)
-            .ToListAsync();
-
-        foreach (var film in withoutPoster)
-        {
-            film.PosterPath =
-                $"https://picsum.photos/seed/{Uri.EscapeDataString(film.Title)}/400/600";
-        }
-
-        await db.SaveChangesAsync();
     }
 }

@@ -1,53 +1,96 @@
 @page
-@model LoginModel
+@model FilmLibrary.Areas.Identity.Pages.Account.LoginModel
+
 @{
     ViewData["Title"] = "Connexion";
 }
 
-<div class="auth-wrap">
-    <section class="auth-art d-none d-lg-flex">
-        <partial name="_AuthArt" />
-        <h2>Ton ciné, ta bibliothèque.</h2>
-        <p>Retrouve tous tes films préférés au même endroit.</p>
-    </section>
+<div class="auth-page">
 
-    <section class="auth-card">
-        <span class="sticker sticker-violet">Bon retour 👋</span>
+    <div class="auth-card">
+
+        <div class="auth-icon">
+            <i class="bi bi-box-arrow-in-right"></i>
+        </div>
+
         <h1>Connexion</h1>
-        <p class="text-muted-ink">Entre tes identifiants pour accéder au catalogue.</p>
 
-        <form id="account" method="post" asp-route-returnUrl="@Model.ReturnUrl">
-            <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
-
-            <div class="mb-3">
-                <label asp-for="Input.Email" class="form-label">Email</label>
-                <input asp-for="Input.Email" class="form-control" autocomplete="username" placeholder="toi@exemple.com" />
-                <span asp-validation-for="Input.Email" class="text-danger small"></span>
-            </div>
-            <div class="mb-3">
-                <label asp-for="Input.Password" class="form-label">Mot de passe</label>
-                <input asp-for="Input.Password" class="form-control" autocomplete="current-password" placeholder="••••••••" />
-                <span asp-validation-for="Input.Password" class="text-danger small"></span>
-            </div>
-            <div class="form-check mb-4">
-                <input asp-for="Input.RememberMe" class="form-check-input" />
-                <label asp-for="Input.RememberMe" class="form-check-label">Se souvenir de moi</label>
-            </div>
-
-            <button type="submit" class="btn btn-yellow w-100 btn-lg">Se connecter</button>
-        </form>
-
-        <p class="text-center mt-4 mb-0">
-            Pas encore de compte ?
-            <a asp-page="./Register" asp-route-returnUrl="@Model.ReturnUrl" class="link-pop">Inscris-toi</a>
+        <p class="auth-subtitle">
+            Connectez-vous à votre compte CinéBiblio.
         </p>
 
-        <div class="demo-note mt-4">
-            <strong>Comptes de test</strong><br />
-            Admin : admin@films.local / Admin123!<br />
-            User : user@films.local / User123!
+        @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+        {
+            <div class="alert alert-danger">
+                @Model.ErrorMessage
+            </div>
+        }
+
+        <form method="post">
+
+            <div asp-validation-summary="ModelOnly"
+                 class="text-danger mb-3">
+            </div>
+
+            <div class="mb-3">
+
+                <label asp-for="Input.Email"
+                       class="form-label">
+                    Adresse e-mail
+                </label>
+
+                <input asp-for="Input.Email"
+                       class="form-control"
+                       placeholder="vous@exemple.com" />
+
+                <span asp-validation-for="Input.Email"
+                      class="text-danger">
+                </span>
+
+            </div>
+
+            <div class="mb-4">
+
+                <label asp-for="Input.Password"
+                       class="form-label">
+                    Mot de passe
+                </label>
+
+                <input asp-for="Input.Password"
+                       class="form-control"
+                       placeholder="••••••••" />
+
+                <span asp-validation-for="Input.Password"
+                      class="text-danger">
+                </span>
+
+            </div>
+
+            <button type="submit"
+                    class="btn btn-primary-custom w-100">
+
+                <i class="bi bi-box-arrow-in-right"></i>
+
+                Se connecter
+
+            </button>
+
+        </form>
+
+        <div class="auth-footer">
+
+            Pas encore de compte ?
+
+            <a asp-page="/Account/Register">
+                Créer un compte
+            </a>
+
         </div>
-    </section>
+
+    </div>
+
 </div>
 
-@section Scripts { <partial name="_ValidationScriptsPartial" /> }
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

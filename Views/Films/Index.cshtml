@@ -1,136 +1,243 @@
-@model IReadOnlyList<Film>
+@model IReadOnlyList<FilmLibrary.Models.Film>
 
 @{
     ViewData["Title"] = "Catalogue";
-    var isAdmin = User.IsInRole("Admin");
-    var firstName = (User.Identity?.Name ?? "").Split('@')[0];
+    var genres = ViewBag.Genres as IEnumerable<FilmLibrary.Models.Genre>
+                  ?? Enumerable.Empty<FilmLibrary.Models.Genre>();
 }
 
-<section class="catalog-header">
+<div class="d-flex justify-content-between align-items-center mb-4">
     <div>
-        <div class="catalog-eyebrow">
-            <i class="bi bi-collection-play"></i>
-            CATALOGUE
-        </div>
-
-        <h1>Bonjour @firstName</h1>
-
-        <p>
-            Explorez notre sélection de films et trouvez votre prochain visionnage.
+        <h1 class="h2 mb-1">Catalogue des films</h1>
+        <p class="text-muted mb-0">
+            Recherchez et filtrez les films.
         </p>
     </div>
 
-    <div class="catalog-header-actions">
-        <div class="catalog-count">
-            <strong>@Model.Count</strong>
-            <span>film@(Model.Count > 1 ? "s" : "")</span>
-        </div>
+    @if (User.IsInRole("Admin"))
+    {
+        <a asp-action="Create"
+           class="btn btn-primary">
+            Ajouter un film
+        </a>
+    }
+</div>
 
-        @if (isAdmin)
-        {
-            <a class="btn btn-primary-custom"
-               asp-action="Create">
-                <i class="bi bi-plus-lg"></i>
-                Ajouter un film
-            </a>
-        }
-    </div>
-</section>
-
-@if (Model.Count == 0)
+@if (TempData["Success"] != null)
 {
-    <div class="empty-state">
-        <i class="bi bi-film"></i>
-        <h2>Aucun film disponible</h2>
-        <p>Le catalogue ne contient encore aucun film.</p>
+    <div class="alert alert-success">
+        @TempData["Success"]
+    </div>
+}
 
-        @if (isAdmin)
-        {
-            <a asp-action="Create" class="btn btn-primary-custom">
-                Ajouter le premier film
-            </a>
-        }
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-body">
+
+        <form asp-action="Index" method="get">
+
+            <div class="row g-3">
+
+                <div class="col-12 col-md-5">
+                    <label class="form-label fw-semibold">
+                        Recherche
+                    </label>
+
+                    <input type="text"
+                           name="search"
+                           value="@ViewBag.Search"
+                           class="form-control"
+                           placeholder="Titre, réalisateur, description..." />
+                </div>
+
+                <div class="col-12 col-md-3">
+                    <label class="form-label fw-semibold">
+                        Genre
+                    </label>
+
+                    <select name="genre"
+                            class="form-select">
+
+                        <option value="">
+                            Tous les genres
+                        </option>
+
+                        @foreach (var item in genres)
+                        {
+                            if ((string?)ViewBag.Genre == item.Name)
+                            {
+                                <option value="@item.Name" selected>
+                                    @item.Name
+                                </option>
+                            }
+                            else
+                            {
+                                <option value="@item.Name">
+                                    @item.Name
+                                </option>
+                            }
+                        }
+
+                    </select>
+                </div>
+
+                <div class="col-6 col-md-2">
+                    <label class="form-label fw-semibold">
+                        Prix min.
+                    </label>
+
+                    <input type="number"
+                           name="minPrice"
+                           value="@ViewBag.MinPrice"
+                           step="0.01"
+                           class="form-control" />
+                </div>
+
+                <div class="col-6 col-md-2">
+                    <label class="form-label fw-semibold">
+                        Prix max.
+                    </label>
+
+                    <input type="number"
+                           name="maxPrice"
+                           value="@ViewBag.MaxPrice"
+                           step="0.01"
+                           class="form-control" />
+                </div>
+
+            </div>
+
+            <div class="d-flex gap-2 mt-3">
+
+                <button type="submit"
+                        class="btn btn-primary">
+                    Rechercher
+                </button>
+
+                <a asp-action="Index"
+                   class="btn btn-outline-secondary">
+                    Réinitialiser
+                </a>
+
+            </div>
+
+        </form>
+
+    </div>
+</div>
+
+@if (!Model.Any())
+{
+    <div class="card border-0 shadow-sm">
+        <div class="card-body text-center py-5">
+
+            <h2 class="h5">
+                Aucun film trouvé
+            </h2>
+
+            <p class="text-muted mb-0">
+                Essayez de modifier vos critères de recherche.
+            </p>
+
+        </div>
     </div>
 }
 else
 {
-    <div class="film-grid">
+    <div class="row g-4">
 
         @foreach (var film in Model)
         {
-            <article class="film-card">
+            <div class="col-12 col-md-6 col-lg-4">
 
-                <a asp-action="Details"
-                   asp-route-id="@film.Id"
-                   class="film-poster">
+                <div class="card h-100 border-0 shadow-sm">
 
-                    <partial name="_Poster" model="film" />
-
-                    <span class="film-year">
-                        @film.ReleaseYear
-                    </span>
-                </a>
-
-                <div class="film-body">
-
-                    <h2 class="film-title" title="@film.Title">
-                        @film.Title
-                    </h2>
-
-                    @if (!string.IsNullOrWhiteSpace(film.Genre))
+                    @if (!string.IsNullOrWhiteSpace(film.PosterPath))
                     {
-                        <span class="film-genre">
-                            @film.Genre
-                        </span>
+                        <img src="@film.PosterPath"
+                             class="card-img-top"
+                             alt="@film.Title"
+                             style="height: 300px; object-fit: cover;" />
                     }
 
-                    <div class="film-meta">
-                        <span>
-                            <i class="bi bi-clock"></i>
-                            @film.DurationMinutes min
-                        </span>
+                    <div class="card-body">
 
-                        <span class="film-price">
-                            @film.Prix.ToString("0.00") €
-                        </span>
-                    </div>
+                        <h2 class="h5 mb-2">
+                            @film.Title
+                        </h2>
 
-                    <div class="film-actions">
-
-                        <a class="btn btn-details"
-                           asp-action="Details"
-                           asp-route-id="@film.Id">
-                            Détails
-                        </a>
-
-                        <a class="btn btn-cart"
-                           asp-controller="Cart"
-                           asp-action="Add"
-                           asp-route-id="@film.Id"
-                           title="Ajouter au panier">
-                            <i class="bi bi-cart-plus"></i>
-                        </a>
-
-                        @if (isAdmin)
+                        @if (film.Genre != null)
                         {
-                            <a class="btn btn-icon"
-                               asp-action="Edit"
-                               asp-route-id="@film.Id"
-                               title="Modifier">
-                                <i class="bi bi-pencil"></i>
-                            </a>
-
-                            <a class="btn btn-icon btn-delete"
-                               asp-action="Delete"
-                               asp-route-id="@film.Id"
-                               title="Supprimer">
-                                <i class="bi bi-trash3"></i>
-                            </a>
+                            <span class="badge text-bg-light border mb-2">
+                                @film.Genre.Name
+                            </span>
                         }
 
+                        @if (!string.IsNullOrWhiteSpace(film.Director))
+                        {
+                            <p class="text-muted mb-2">
+                                Réalisé par @film.Director
+                            </p>
+                        }
+
+                        @if (film.ReleaseYear.HasValue)
+                        {
+                            <p class="text-muted small mb-2">
+                                @film.ReleaseYear
+                            </p>
+                        }
+
+                        @if (film.DurationMinutes.HasValue)
+                        {
+                            <p class="text-muted small mb-2">
+                                @film.DurationMinutes min
+                            </p>
+                        }
+
+                        @if (!string.IsNullOrWhiteSpace(film.Description))
+                        {
+                            <p class="card-text">
+                                @film.Description
+                            </p>
+                        }
+
+                        <div class="fw-semibold mb-3">
+                            @film.Prix.ToString("0.00") €
+                        </div>
+
                     </div>
+
+                    <div class="card-footer bg-white border-0">
+
+                        <div class="d-flex gap-2">
+
+                            <a asp-action="Details"
+                               asp-route-id="@film.Id"
+                               class="btn btn-sm btn-outline-primary">
+                                Détails
+                            </a>
+
+                            @if (User.IsInRole("Admin"))
+                            {
+                                <a asp-action="Edit"
+                                   asp-route-id="@film.Id"
+                                   class="btn btn-sm btn-outline-warning">
+                                    Modifier
+                                </a>
+
+                                <a asp-action="Delete"
+                                   asp-route-id="@film.Id"
+                                   class="btn btn-sm btn-outline-danger">
+                                    Supprimer
+                                </a>
+                            }
+
+                        </div>
+
+                    </div>
+
                 </div>
-            </article>
+
+            </div>
         }
 
     </div>
